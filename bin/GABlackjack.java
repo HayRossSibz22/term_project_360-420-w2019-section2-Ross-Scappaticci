@@ -1,0 +1,560 @@
+/**
+	Genetic Algorithm for Blackjack 
+	By: Ashley Scappaticci and Hayden Ross
+	Date: May 2019
+
+ Sampled code from: Robby the cleaning robot
+ Author: J. Sumner
+ */
+
+// Import packages
+import java.io.*;
+import java.text.*;
+import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.lang.Math;
+
+public class GABlackjack
+{
+    // Formatter
+    public static final DecimalFormat df = new DecimalFormat("+#.##%;-#.##%");
+
+
+    // Declare parameters and constants						
+    public static final double pc = 1.0;                // Probability of crossover
+    public static double pm = 0.005;                    // Probability of mutation
+    public static final int population = 200;           // Population size (must be even)
+    public static final int chromosomes = 400;          // Chromosome length, number of possibilities
+    public static final int generations = 4000;         // Number of generations
+    public static final int elite = (int)(0.02 * population); // Percentage of solutions to clone
+
+
+    // Allocate memory to store solutions and associated fitness
+    public static int[][] solutions = new int[population][chromosomes]; // 2D array storing a chromosome for each member of the "population"
+    public static double[] fitness = new double[population];            // 1D array storing the "fitness" of each member in the "population"
+	
+	public static ArrayList<Integer> deck = new ArrayList<Integer>();				//Deck
+    public static String[] card = {" "," "," "," "," "," "," "," "," "," "," "};	// --> DOUBLE?
+    public static String[] dCard = {" "," "," "," "," "," "," "," "," "," "," "};	// "
+
+
+    // Start main method
+    public static void main(String[] args)
+    {
+        // Open output files
+        PrintWriter outputFile = null;
+        try
+        {
+            outputFile = new PrintWriter(new FileOutputStream("Blackjack.txt",false));
+        }
+        catch(FileNotFoundException e)
+        {
+            System.out.println("File error.  Program aborted.");
+            System.exit(0);
+        }
+
+        PrintWriter currentBestAsList = null;
+        try
+        {
+            currentBestAsList = new PrintWriter(new FileOutputStream("CurrentBestAsList.txt",false));
+        }
+        catch(FileNotFoundException e)
+        {
+            System.out.println("File error.  Program aborted.");
+            System.exit(0);
+        }
+
+        PrintWriter currentBestAsArray = null;
+        try
+        {
+            currentBestAsArray = new PrintWriter(new FileOutputStream("CurrentBestAsArray.txt",false));
+        }
+        catch(FileNotFoundException e)
+        {
+            System.out.println("File error.  Program aborted.");
+            System.exit(0);
+        }
+
+
+        // Initialize population randomly
+        for (int i = 0; i < population; i++)
+        {
+            for (int j = 0; j < chromosomes; j++)
+            {
+                double bit = Math.random();
+                if (bit < 0.5)
+                    solutions[i][j] = 0;
+                else if (bit < 1.)
+                    solutions[i][j] = 1;
+            }    
+            fitness[i] = 0.;
+        }
+
+
+        // Output, not necessary - delete at the end
+        System.out.println("Generation 0");
+        for (int i = 0; i < population; i++){
+            printChromosome(solutions, i);
+        }
+
+
+        // Evaluate initial fitness
+        fitness();
+
+
+        // Keep track of best solutions in a given generation
+        int[] best = new int[elite];
+        for (int i = 0; i < elite; i++)
+            best[i] = 0;
+
+
+        // Start generation loop
+        for (int i = 1; i < generations; i++)
+        {
+            // Worst fitness in current generation
+            double minFitness = 1.;
+            for (int k = 0; k < population; k++)
+            {
+                if (fitness[k] < minFitness)
+                    minFitness = fitness[k];
+            }
+            //System.out.println("Min fitness = " + df.format(minFitness));
+
+
+            // Temporary memory allocation for next generation
+            int[][] tmp = new int[population][chromosomes];
+
+
+            // Create new population
+            int count = 0;
+            while (count < population)
+            {
+                // Selection by roulette wheel
+                int[] parents = rouletteWheel(minFitness);
+                //printChromosome(solutions,parents[0]);
+                //printChromosome(solutions,parents[1]);
+
+
+                // Crossover
+                // TASK: Implement two-point crossover by copying from the
+                //       solutions[][] matrix to the next two open rows in the
+                //       tmp[][] matrix.
+                //
+                //       Remember the indices for the two rows in solutions[][]
+                //       to be used for crossover are stored in parents[0] and
+                //       parents[1].  You will have to use Math.random() to
+                //       determine where the crossover points will occur.
+                //
+                //       Big hint: The code to copy from solutions[][] to tmp[][]
+                //       should involve statements that look like this
+                //
+                //       tmp[count][j] = solutions[parents[0]][j];
+                if (Math.random() < pc)
+                {
+					int crossover1 = (int) (Math.random() * chromosomes);
+					int crossover2 = (int) (Math.random() * chromosomes); 
+					
+					int cross1 = Math.min(crossover1, crossover2);
+					int cross2 = Math.max(crossover1, crossover2);
+					
+					for (int c = 0; c < cross1; c++)
+					{
+						tmp[count][c] = solutions[parents[0]][c];
+						tmp[count+1][c] = solutions[parents[1]][c];
+					}
+					
+					for (int c = cross1; c < cross2; c++)
+					{
+						tmp[count][c] = solutions[parents[1]][c];
+						tmp[count+1][c] = solutions[parents[0]][c];
+					}
+					
+					for (int c = cross2; c < chromosomes; c++)
+					{
+						tmp[count][c] = solutions[parents[0]][c];
+						tmp[count+1][c] = solutions[parents[1]][c];
+					}
+				}
+                else
+                {
+                    // Copy parents
+                    //System.out.println("Clone parents");
+
+
+
+                }
+
+
+                // Mutation
+                // TASK: Implement the mutation operation on the two new
+                //       solutions that you just created in tmp[][].
+                //
+                //       Remember to loop over every 
+				//  	The probability of
+                //       mutation for each gene is stored as pm.
+				for(int m = 0; m < chromosomes; m++)
+				{
+					if (Math.random() < pm)
+					{
+						tmp[count][m] = (int) (Math.random() * 7);
+					}
+
+					if (Math.random() < pm)
+					{
+						tmp[count+1][m] = (int) (Math.random() * 7);
+					}
+                }
+
+                // Advance count by 2 as we have added two children i.e. two new
+                // rows in tmp[][].
+                count = count + 2;
+            }
+
+
+            // Copy tmp to solutions
+            for (int j = 0; j < population; j++)
+            {
+                if (fitness[j] < fitness[best[elite-1]]) // Keep elites
+                {
+                    System.arraycopy(tmp[j], 0, solutions[j], 0, chromosomes);
+                }
+            }
+
+
+            // Update objective function
+            fitness();
+
+
+            // Calculate average fitness of population and output
+            double sumFitness = 0.0;
+            for (int j = 0; j < population; j++){
+                sumFitness += fitness[j];
+            }
+
+            double avgFitness = sumFitness / population;
+
+            // Find elite solutions and output best
+            double maxFitness = -1e3;
+            for (int j = 0; j < population; j++)
+            {
+                if (fitness[j] > maxFitness)
+                {
+                    maxFitness = fitness[j];
+                    best[0] = j;
+                }
+            }
+            for (int getBest = 1; getBest < elite; getBest++)
+            {
+                maxFitness = -1e3;
+                for (int j = 0; j < population; j++)
+                {
+                    if (fitness[j] > maxFitness && fitness[j] < fitness[best[getBest-1]])
+                    {
+                        maxFitness = fitness[j];
+                        best[getBest] = j;
+                    }
+                }
+            }
+
+
+            // Output
+            if (i%10==0)
+            {
+                System.out.println();
+                System.out.println("Generation " + i);
+                System.out.println("Avg fitness = " + df.format(avgFitness));
+                System.out.println("Max fitness = " + df.format(fitness[best[0]]));
+                System.out.println("Elites:");
+                for (int print = 0; print < elite; print ++)
+                {
+                    System.out.println(best[print] + "\t" + df.format(fitness[best[print]]));
+                }
+
+                outputFile.printf("%d\t%1.6e\t%1.6e\r\n",i,avgFitness,fitness[best[0]]);
+                currentBestAsList.printf("{");
+                for(int p = 0; p < chromosomes; p++)
+                    currentBestAsList.printf("%d,",solutions[best[0]][p]);
+                currentBestAsList.printf("}\n");
+
+                currentBestAsArray.printf("\n");
+                for(int p = 0; p < chromosomes; p++)
+                {
+                    currentBestAsArray.printf("%d",solutions[best[0]][p]);
+                }
+                currentBestAsArray.printf("\n");
+
+                outputFile.flush();
+                currentBestAsList.flush();
+                currentBestAsArray.flush();
+            }
+        }
+
+        System.out.println("Best strategy after " + generations + " generations:");
+        printChromosome(solutions,best[0]);
+
+        outputFile.close();
+        currentBestAsList.close();
+        currentBestAsArray.close();
+    } //End main method
+
+
+    public static void fitness()
+    {
+        // Loop over the population - keep
+        for (int m = 0; m < population; m++)
+        {
+            // Loop over blackjack game 
+			int k = 0;						//removes card from deck after one has been dealt
+            int n = 15;
+			int taskTotal = 100;			//number of hands
+			double bet = 10.;				//bet of 10$ per hand
+			double totalMoney = bet * taskTotal;	//Initial $ player has
+			double finalMoney = 0.;			//Final $ after 100 games 
+            double diffBet = 0.;			
+			boolean go = true;
+			boolean dealerGo = true;
+			
+			for (int tasks = 0; tasks < taskTotal; tasks++)
+            {
+				//Creates deck of 52 cards
+			    for (int i=0;i<4;i++) {
+			      for (int j=1;j<=13;j++) {
+			        if (j<10) {
+			          deck.add(j);
+			        }
+			        else {
+			          deck.add(10);
+			        }
+			      }
+			    }
+				
+                // Shuffle deck and distribute 2 cards 
+			    total = cardPicker(total,k,0,'h');
+			    k++;
+			    dealer = cardPicker(dealer,k,0,'d');
+			    k++;
+			    total = cardPicker(total,k,1,'h');
+			    k++;
+			    dealer = cardPicker(dealer,k,1,'d');
+			    k++;
+			    /*System.out.println("Dealer's visible card: " + dCard[0]);
+			    System.out.println("These are your cards: " + card[0] + " " + card[1] + "\n\tHand: " + card[0] + " " + card[1] + "\n\tTotal: " + total + "\n");*/
+
+			    if (total == 21) {
+			     	//System.out.println("BLACKJACK!");	
+			     	finalMoney += bet+bet * 1.5;
+					go = false;
+			    }
+				if (dealer == 21) {
+					//System.out.println("DEALER BLACKJACK!");	
+					finalMoney -= bet;
+					go = false;
+				}
+				
+                /* Start Robby at a random location 
+                int x = (int)(Math.random() * n);
+                int y = (int)(Math.random() * n); */
+
+
+                // Apply algorithm 2n^2 times and keep track of score
+				if (go == true) {
+                	int score = 0;
+                	for (int actions = 0; actions < 9; actions++) //max number of moves in a game - 2 cards dealt 
+               	 {/*
+                    // Determine situation
+                    int N, S, E, W;
+                    if (x == 0)
+                        W = -1;
+                    else
+                        W = room[x-1][y];
+
+                    if (x == n-1)
+                        E = -1;
+                    else
+                        E = room[x+1][y];
+
+                    if (y == 0)
+                        N = -1;
+                    else
+                        N = room[x][y-1];
+
+                    if (y == n-1)
+                        S = -1;
+                    else
+                        S = room[x][y+1]; */
+
+
+                    // Get gene corresponding to this situation, (total = my hand, dealer's face up card)
+                    	int gene = situation(total, dValue);
+
+                    // Take action and evaluate new position and score
+                    /*printChromosome(solutions,m);
+                    System.out.println(x);
+                    System.out.println(y);
+                    System.out.println(N);
+                    System.out.println(S);
+                    System.out.println(E);
+                    System.out.println(W);
+                    System.out.println(gene);
+                    System.out.println(solutions[m][gene]);*/
+
+                    	switch (solutions[m][gene])
+                    	{
+                        	case 0:     //Stand
+			           			//System.out.println("Stand.");
+			            		//System.out.println("Total: " + total);
+                            	break;
+                        	case 1:      // Hit
+			            		total = cardPicker(total,k,i,'h');
+			           			k++;
+			            		
+								//System.out.print("This is your card: " + card[i] + "\n\tHand: ");
+			            		for (int j=0;j<=i;j++) {
+			              	  	  System.out.print(card[j] + " ");
+			            		}
+			            		System.out.println("\n\tTotal: " + total + "\n");
+      
+                        		default: break;
+                    	}
+
+                    //System.out.println(x);
+                    //System.out.println(y);
+				    if (dealer < total || (dealer > 21 && total < 22)) {
+				      //System.out.println("You win!");
+					  finalMoney += bet*2;
+					  break;
+				    }
+				    else {
+				      //System.out.println("You lose.");
+					  finalMoney -= bet;
+					  break;
+				    }
+                }
+            }
+		}
+            fitness[m] = finalMoney/totalMoney; 
+        }
+    }	//End Fitness method
+
+
+    /*
+     The situation() method outputs the gene number associated to a given situation.
+     You do not need to modify it.
+     */
+    public static int situation(int total, int dValue)
+    {
+        int situation;		//determining which gene matches what my situiation is (my total, dealer up card)
+		
+		int k=0;
+		boolean move = true;
+		outerloop:
+		for (int i=2;i<22;i++) { 				//soft
+			for (int j=1;j<11;i++) {
+				if (total == i && dValue == j) {
+					situation = chromosome[k];
+					move = false;
+					break outerloop;
+				}
+				else {
+					k++;
+				}
+			}
+		}
+		
+		if (move == true) {	//only does second loop if move = true
+			outerloop:
+				for (int i=2;i<22;i++) { //hard
+					for (int j=1;j<11;i++) {
+						if (total == i && dValue == j) {
+							situation = chromosome[k];
+							break outerloop;
+						}
+						else {
+							k++;
+						}
+					}
+				}
+			}
+
+        return situation;
+    }
+
+
+    /*
+     The rouletteWheel() method selects next parents based on fitness.
+     You do not need to modify it.
+     */
+    public static int[] rouletteWheel(double minFitness)
+    {
+        double sum = 0.0;
+        for (int i = 0; i < population; i++){
+            sum += fitness[i] - minFitness;
+        }
+
+        int[] indices = new int[2];
+        double luckyNumber, findParent;
+        int search;
+
+
+        // Spin number 1 to get first parent
+        luckyNumber = Math.random();
+        findParent = 0.0;
+        search = 0;
+        while (findParent <= luckyNumber && search < fitness.length)
+        {
+            findParent += (fitness[search] - minFitness) / sum;
+            search ++;
+        }
+
+        indices[0] = search - 1;
+        //System.out.println("Parent 1 = " + indices[0]);
+
+
+        // Spin number 2 to get second parent
+        luckyNumber = Math.random();
+        findParent = 0.0;
+        search = 0;
+        while (findParent <= luckyNumber && search < fitness.length)
+        {
+            findParent += (fitness[search] - minFitness) / sum;
+            search ++;
+        }
+
+        indices[1] = search - 1;
+        //System.out.println("Parent 2 = " + indices[1]);
+
+        return indices;
+    }
+
+
+    /*
+     The printChromosome() method outputs a given solution to screen.
+     You do not need to modify it.
+     */
+    public static void printChromosome(int[][] array, int index)
+    {
+        System.out.print("\t");
+
+        for (int j = 0; j < chromosomes; j++){
+            System.out.print(array[index][j]);
+        }
+
+        System.out.println();
+    }
+   
+   
+    public static int cardPicker(int total, int k, int i, char a) {
+      int random = (int) (Math.random()*(52-k));
+      if (a == 'h') {
+        card[i] = deck.get(random);
+      }
+      else {
+        dCard[i] = deck.get(random);
+      }
+      deck.remove(random);
+
+      return total;
+    }
+
+}// End class GABlackjack
