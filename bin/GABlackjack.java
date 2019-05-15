@@ -1,5 +1,6 @@
 /**
 	Genetic Algorithm for Blackjack 
+	Jackson Black
 	By: Ashley Scappaticci and Hayden Ross
 	Date: May 2019
 
