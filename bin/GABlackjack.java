@@ -90,14 +90,13 @@ public class GABlackjack
             fitness[i] = 0.;
         }
 
-		System.out.println("test1");
+
         // Output
         System.out.println("Generation 0");
         for (int i = 0; i < population; i++){
             printChromosome(solutions, i);
         }
 
-		System.out.print("test1.5");
         // Evaluate initial fitness
         fitness();
 
@@ -179,9 +178,6 @@ public class GABlackjack
                 {
                     // Copy parents
                     //System.out.println("Clone parents");
-
-
-					System.out.println("test2");
                 }
 
 
@@ -209,7 +205,6 @@ public class GABlackjack
                 // rows in tmp[][].
                 count = count + 2;
             }
-			System.out.println("test3");
 
             // Copy tmp to solutions
             for (int j = 0; j < population; j++)
@@ -255,7 +250,6 @@ public class GABlackjack
                     }
                 }
             }
-			System.out.println("test4");
 
             // Output
             if (i%10==0)
@@ -295,18 +289,16 @@ public class GABlackjack
         outputFile.close();
         currentBestAsList.close();
         currentBestAsArray.close();
-		System.out.println("test5");
     } //End main method
 
 
     public static void fitness()
     {
-		System.out.println("Test million");
         // Loop over the population - keep
         for (int m = 0; m < population; m++)
         {
             // Loop over blackjack game 
-			int k = 0;						//removes card from deck after one has been dealt
+
 			int taskTotal = 100;			//number of hands
 			double bet = 10.;				//bet of 10$ per hand
 			double totalMoney = bet * taskTotal;	//Initial $ player has
@@ -314,15 +306,16 @@ public class GABlackjack
             double diffBet = 0.;			
 			boolean go = true;
 			boolean dealerGo = true;
-			int total1 = 0;
-			int total2 = 0;
-			int dealer1 = 0;
-			int dealer2 = 0;
 			double averagescore = 0;
 			
 			for (int tasks = 0; tasks < taskTotal; tasks++) //Loop over games
             {
-				System.out.println("Test20");
+				int k = 0;						//removes card from deck after one has been dealt
+				int total1 = 0;
+				int total2 = 0;
+				int dealer1 = 0;
+				int dealer2 = 0;
+				
 				//Creates deck of 52 cards
 			    for (int i=0;i<4;i++) {
 			      for (int j=1;j<=13;j++) {
@@ -342,26 +335,25 @@ public class GABlackjack
 			    k++;
 			    total2 = cardPicker(total1,k,'h');		//total of card 1 + card 2
 			    k++;
+				System.out.println(total2);
 			    dealer2 = cardPicker(dealer1,k,'d');		//total of dealer card 1 + card 2
 			    k++;
+				System.out.println(dealer1);
 				
-				System.out.println("Test21.");
-				
-				if (go == true) {
-                	int score = 0;
+				//if (go == true) {
+                	//int score = 0;
                 	for (int actions = 0; actions < 9; actions++) //max number of moves in a game - 2 cards dealt 
                	 	{
                     // Get gene number corresponding to this situation, (total = my hand, dealer's face up card) 
-					System.out.println("Test22.");
                     	int gene = situation(total2, dealer1, m);	//number between 0 and 399
-						System.out.println("Test30");
+
 						if (solutions[m][gene] == 0){	//Stand, do nothing
-						
-							//break;	//breaks out of for loop
+							System.out.println("Teststay");
+							break;	//breaks out of for loop
 						
 						}
 						if (solutions[m][gene] == 1){							//Hit
-							System.out.println("Test31");
+							System.out.println("Testhit");
 							total2 = cardPicker(total2,k,'h');
 							k++;		
 						}
@@ -371,8 +363,7 @@ public class GABlackjack
 						dealer2 = cardPicker(dealer2,k,'d');	
 							k++;
 					}
-				System.out.println("Test23.");
-				    
+					
 					if (( dealer2 < total2 && total2 < 22) || (dealer2 > 21 && total2 < 22)) 
 					{
 					  	if (total2 == 21){				//win with a blackjack
@@ -386,16 +377,16 @@ public class GABlackjack
 					  finalMoney -= bet;
 
 				    }
-                System.out.println("Test24.");
-            } 
+
+            //} 
 				
 			deck.clear();		//Clear all elements of deck
 			
 			//finalMoney += 
 				
 		} //Loop over games
-		System.out.println("Test25.");
             fitness[m] = finalMoney/totalMoney; 
+			System.out.println(fitness[m]);
 			
 			
         }//End loop over population
@@ -406,42 +397,52 @@ public class GABlackjack
      The situation() method outputs the gene number associated to a given situation.
      You do not need to modify it.
      */
-    public static int situation(int total, int dealer, int m)
+    public static int situation(int total2, int dealer1, int m)
     {
         int situation = 0;		//determining which gene number matches what my situation is (my total, dealer up card)
 		System.out.println("Test40.");
 		int k=0;
 		boolean move = true;
-		outerloop:
-		for (int i=2;i<22;i++) { 				//Hard 
-			for (int j=1;j<11;i++) {
-				if (total == i && dealer == j) {
-					situation = solutions[m][k];
-					move = false;
-					break outerloop;
-				}
-				else {
-					k++;
-				}
+		
+		//for (int k=0; k<population/2;k++){
+		
+			outerloop:
+			for (int i=2;i<22;i++) { 				//Hard 
+				for (int j=1;j<11;i++) {
+					if (total2 == i && dealer1 == j) {
+						situation = solutions[m][k];
+						//move = false;
+						break outerloop;
+					}
+					else {
+						k++;
+						if (k>200){
+							break outerloop;
+						}
+						
+					}
 			}
 			System.out.println("Test41.");
 		}
 		
 		//0-199 and 200-399
-		/*if (move == true) {						//only does second loop if move = true
+		if (move == true) {						//only does second loop if move = true
 			outerloop:
 				for (int i=2;i<22;i++) { 		//Soft
 					for (int j=1;j<11;i++) {
-						if (total == i && dealer == j) {
+						if (total2 == i && dealer1 == j) {
 							situation = solutions[m][k];
 							break outerloop;
 						}
 						else {
 							k++;
+							if (k>400)
+								break outerloop;
+							
 						}
 					}
 				}
-			}*/
+			}
 			System.out.println("Test42.");
 
         return situation;
