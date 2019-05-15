@@ -314,8 +314,11 @@ public class GABlackjack
             double diffBet = 0.;			
 			boolean go = true;
 			boolean dealerGo = true;
+			int total = 0;
+			int dealer1 = 0;
+			int dealer 2 = 0;
 			
-			for (int tasks = 0; tasks < taskTotal; tasks++)
+			for (int tasks = 0; tasks < taskTotal; tasks++) //Loop over games
             {
 				//Creates deck of 52 cards
 			    for (int i=0;i<4;i++) {
@@ -332,12 +335,13 @@ public class GABlackjack
                 // Shuffle deck and distribute 2 cards 
 			    total = cardPicker(total,k,0,'h');
 			    k++;
-			    dealer = cardPicker(dealer,k,0,'d');
+			    dealer1 = cardPicker(dealer1,k,0,'d');
 			    k++;
 			    total = cardPicker(total,k,1,'h');
 			    k++;
-			    dealer = cardPicker(dealer,k,1,'d');
+			    dealer2 = cardPicker(dealer1,k,1,'d');
 			    k++;
+				
 			    /*System.out.println("Dealer's visible card: " + dCard[0]);
 			    System.out.println("These are your cards: " + card[0] + " " + card[1] + "\n\tHand: " + card[0] + " " + card[1] + "\n\tTotal: " + total + "\n");*/
 
@@ -356,71 +360,30 @@ public class GABlackjack
                 int x = (int)(Math.random() * n);
                 int y = (int)(Math.random() * n); */
 
-
-                // Apply algorithm 2n^2 times and keep track of score
 				if (go == true) {
                 	int score = 0;
                 	for (int actions = 0; actions < 9; actions++) //max number of moves in a game - 2 cards dealt 
-               	 {/*
-                    // Determine situation
-                    int N, S, E, W;
-                    if (x == 0)
-                        W = -1;
-                    else
-                        W = room[x-1][y];
-
-                    if (x == n-1)
-                        E = -1;
-                    else
-                        E = room[x+1][y];
-
-                    if (y == 0)
-                        N = -1;
-                    else
-                        N = room[x][y-1];
-
-                    if (y == n-1)
-                        S = -1;
-                    else
-                        S = room[x][y+1]; */
-
-
+               	 {
                     // Get gene corresponding to this situation, (total = my hand, dealer's face up card)
-                    	int gene = situation(total, dValue);
-
-                    // Take action and evaluate new position and score
-                    /*printChromosome(solutions,m);
-                    System.out.println(x);
-                    System.out.println(y);
-                    System.out.println(N);
-                    System.out.println(S);
-                    System.out.println(E);
-                    System.out.println(W);
-                    System.out.println(gene);
-                    System.out.println(solutions[m][gene]);*/
-
-                    	switch (solutions[m][gene])
-                    	{
-                        	case 0:     //Stand
-			           			//System.out.println("Stand.");
-			            		//System.out.println("Total: " + total);
-                            	break;
-                        	case 1:      // Hit
-			            		total = cardPicker(total,k,i,'h');
-			           			k++;
-			            		
-								//System.out.print("This is your card: " + card[i] + "\n\tHand: ");
-			            		for (int j=0;j<=i;j++) {
-			              	  	  System.out.print(card[j] + " ");
-			            		}
-			            		System.out.println("\n\tTotal: " + total + "\n");
-      
-                        		default: break;
-                    	}
-
+                    	int gene = situation(total, dealer1, m);
+	
+						if (solutions[m][gene] == 0){	//Stand, do nothing
+							
+						}
+						else{							//Hit
+							total = cardPicker(total,k,i,'h');
+							k++;		
+						}
+				}
+				
+				if (dealer2 > 16 || dealer2 < 22){			//After player stands, dealer hits until at least 17.
+					dealer2 = cardPicker(dealer2,k,i,);
+						k++;
+				}
+				
                     //System.out.println(x);
                     //System.out.println(y);
-				    if (dealer < total || (dealer > 21 && total < 22)) {
+				    if (dealer2 < total || (dealer2 > 21 && total < 22)) {
 				      //System.out.println("You win!");
 					  finalMoney += bet*2;
 					  break;
@@ -430,11 +393,13 @@ public class GABlackjack
 					  finalMoney -= bet;
 					  break;
 				    }
-                }
+                
             }
-		}
+		} //Loop over games
+		
             fitness[m] = finalMoney/totalMoney; 
-        }
+			
+        }//End loop over population
     }	//End Fitness method
 
 
@@ -442,17 +407,17 @@ public class GABlackjack
      The situation() method outputs the gene number associated to a given situation.
      You do not need to modify it.
      */
-    public static int situation(int total, int dValue)
+    public static int situation(int total, int dValue, int m)
     {
         int situation;		//determining which gene matches what my situiation is (my total, dealer up card)
 		
 		int k=0;
 		boolean move = true;
 		outerloop:
-		for (int i=2;i<22;i++) { 				//soft
+		for (int i=2;i<22;i++) { 				//Hard
 			for (int j=1;j<11;i++) {
 				if (total == i && dValue == j) {
-					situation = chromosome[k];
+					situation = solutions[m][k];
 					move = false;
 					break outerloop;
 				}
@@ -462,9 +427,9 @@ public class GABlackjack
 			}
 		}
 		
-		if (move == true) {	//only does second loop if move = true
+		if (move == true) {						//only does second loop if move = true
 			outerloop:
-				for (int i=2;i<22;i++) { //hard
+				for (int i=2;i<22;i++) { 		//Soft
 					for (int j=1;j<11;i++) {
 						if (total == i && dValue == j) {
 							situation = chromosome[k];
