@@ -23,7 +23,7 @@ public class GABlackjack
 
 
     // Declare parameters and constants						
-    public static final double pc = 1.0;                // Probability of crossover
+    public static final double pc = 1.0;                // Probability of crossover, will always happen
     public static double pm = 0.005;                    // Probability of mutation
     public static final int population = 200;           // Population size (must be even)
     public static final int chromosomes = 400;          // Chromosome length, number of possibilities
@@ -36,8 +36,6 @@ public class GABlackjack
     public static double[] fitness = new double[population];            // 1D array storing the "fitness" of each member in the "population"
 	
 	public static ArrayList<Integer> deck = new ArrayList<Integer>();				//Deck
-    public static String[] card = {" "," "," "," "," "," "," "," "," "," "," "};	// --> DOUBLE?
-    public static String[] dCard = {" "," "," "," "," "," "," "," "," "," "," "};	// "
 
 
     // Start main method
@@ -307,7 +305,6 @@ public class GABlackjack
         {
             // Loop over blackjack game 
 			int k = 0;						//removes card from deck after one has been dealt
-            int n = 15;
 			int taskTotal = 100;			//number of hands
 			double bet = 10.;				//bet of 10$ per hand
 			double totalMoney = bet * taskTotal;	//Initial $ player has
@@ -315,9 +312,11 @@ public class GABlackjack
             double diffBet = 0.;			
 			boolean go = true;
 			boolean dealerGo = true;
-			int total = 0;
+			int total1 = 0;
+			int total2 = 0;
 			int dealer1 = 0;
-			int dealer 2 = 0;
+			int dealer2 = 0;
+			double averagescore = 0;
 			
 			for (int tasks = 0; tasks < taskTotal; tasks++) //Loop over games
             {
@@ -334,19 +333,16 @@ public class GABlackjack
 			    }
 				
                 // Shuffle deck and distribute 2 cards 
-			    total = cardPicker(total,k,0,'h');
+			    total1 = cardPicker(total,k,0,'h');
 			    k++;
 			    dealer1 = cardPicker(dealer1,k,0,'d');
 			    k++;
-			    total = cardPicker(total,k,1,'h');
+			    total2 = cardPicker(total,k,1,'h');		//total of card 1 + card 2
 			    k++;
-			    dealer2 = cardPicker(dealer1,k,1,'d');
+			    dealer2 = cardPicker(dealer1,k,1,'d');		//total of dealer card 1 + card 2
 			    k++;
-				
-			    /*System.out.println("Dealer's visible card: " + dCard[0]);
-			    System.out.println("These are your cards: " + card[0] + " " + card[1] + "\n\tHand: " + card[0] + " " + card[1] + "\n\tTotal: " + total + "\n");*/
 
-			    if (total == 21) {
+			    /* if (total2 == 21) {
 			     	//System.out.println("BLACKJACK!");	
 			     	finalMoney += bet+bet * 1.5;
 					go = false;
@@ -355,47 +351,52 @@ public class GABlackjack
 					//System.out.println("DEALER BLACKJACK!");	
 					finalMoney -= bet;
 					go = false;
-				}
-				
-                /* Start Robby at a random location 
-                int x = (int)(Math.random() * n);
-                int y = (int)(Math.random() * n); */
+				} */
 
 				if (go == true) {
                 	int score = 0;
                 	for (int actions = 0; actions < 9; actions++) //max number of moves in a game - 2 cards dealt 
-               	 {
-                    // Get gene corresponding to this situation, (total = my hand, dealer's face up card)
-                    	int gene = situation(total, dealer1, m);
+               	 	{
+                    // Get gene number corresponding to this situation, (total = my hand, dealer's face up card)
+                    	int gene = situation(total2, dealer1, m);	//number between 0 and 399
 	
 						if (solutions[m][gene] == 0){	//Stand, do nothing
-							
+						
+							break;	//breaks out of for loop
+						
 						}
 						else{							//Hit
-							total = cardPicker(total,k,i,'h');
+							total2 = cardPicker(total,k,i,'h');
 							k++;		
 						}
-				}
+					}
 				
-				if (dealer2 > 16 || dealer2 < 22){			//After player stands, dealer hits until at least 17.
-					dealer2 = cardPicker(dealer2,k,i,);
-						k++;
-				}
+					while (dealer2 < 17){							//After player stands, dealer hits until at least 17.
+						dealer2 = cardPicker(dealer2,k,i,'d');	
+							k++;
+					}
 				
-                    //System.out.println(x);
-                    //System.out.println(y);
-				    if (dealer2 < total || (dealer2 > 21 && total < 22)) {
-				      //System.out.println("You win!");
-					  finalMoney += bet*2;
+				    if (( dealer2 < total2 && total2 < 22) || (dealer2 > 21 && total2 < 22)) 
+					{
+					  	if (total2 == 21){				//win with a blackjack
+						  	finalMoney += bet * 2.5; 
+					  	}
+					  	
+						else {
+							finalMoney += bet*2;
+						} 
 					  break;
+					  
 				    }
 				    else {
-				      //System.out.println("You lose.");
 					  finalMoney -= bet;
 					  break;
 				    }
                 
-            }
+            } 
+				
+			deck.clear();		//Clear all elements of deck
+				
 		} //Loop over games
 		
             fitness[m] = finalMoney/totalMoney; 
@@ -408,16 +409,16 @@ public class GABlackjack
      The situation() method outputs the gene number associated to a given situation.
      You do not need to modify it.
      */
-    public static int situation(int total, int dValue, int m)
+    public static int situation(int total2, int dealer1, int m)
     {
-        int situation;		//determining which gene matches what my situiation is (my total, dealer up card)
+        int situation;		//determining which gene number matches what my situation is (my total, dealer up card)
 		
 		int k=0;
 		boolean move = true;
 		outerloop:
-		for (int i=2;i<22;i++) { 				//Hard
+		for (int i=2;i<22;i++) { 				//Hard 
 			for (int j=1;j<11;i++) {
-				if (total == i && dValue == j) {
+				if (total2 == i && dealer1 == j) {
 					situation = solutions[m][k];
 					move = false;
 					break outerloop;
@@ -427,12 +428,12 @@ public class GABlackjack
 				}
 			}
 		}
-		
+		//0-199 and 200-399
 		if (move == true) {						//only does second loop if move = true
 			outerloop:
 				for (int i=2;i<22;i++) { 		//Soft
 					for (int j=1;j<11;i++) {
-						if (total == i && dValue == j) {
+						if (total2 == i && dealer1 == j) {
 							situation = chromosome[k];
 							break outerloop;
 						}
@@ -510,7 +511,7 @@ public class GABlackjack
     }
    
    
-    public static int cardPicker(int total, int k, int i, char a) {
+    public static int cardPicker(int total, int k, int i) {
       int random = (int) (Math.random()*(52-k));
       if (a == 'h') {
         card[i] = deck.get(random);
