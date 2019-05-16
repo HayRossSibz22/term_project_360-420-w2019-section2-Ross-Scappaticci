@@ -328,10 +328,10 @@ public class GABlackjack
 			      }
 			    }
 				
-                // Shuffle deck and distribute 2 cards 
+                // Shuffle deck and distribute 2 cards to player and dealer 
 			    total1 = cardPicker(total1,k,'h');
 			    k++;
-			    dealer1 = cardPicker(dealer1,k,'d');
+			    dealer1 = cardPicker(dealer1,k,'d');	//dealer's face up card
 			    k++;
 			    total2 = cardPicker(total1,k,'h');		//total of card 1 + card 2
 			    k++;
@@ -349,6 +349,7 @@ public class GABlackjack
 
 						if (solutions[m][gene] == 0){	//Stand, do nothing
 							System.out.println("Teststay");
+							System.out.println(solutions[m][gene] + " is the gene number");
 							break;	//breaks out of for loop
 						
 						}
@@ -357,6 +358,7 @@ public class GABlackjack
 							total2 = cardPicker(total2,k,'h');
 							k++;		
 						}
+						System.out.println(actions + "    actions");
 					}
 				
 					while (dealer2 < 17){							//After player stands, dealer hits until at least 17.
@@ -404,29 +406,28 @@ public class GABlackjack
 		int k=0;
 		boolean move = true;
 		
-		//for (int k=0; k<population/2;k++){
+		//for (int k=0; k<population/2;k++)
+		
 		
 			outerloop:
 			for (int i=2;i<22;i++) { 				//Hard 
 				for (int j=1;j<11;i++) {
 					if (total2 == i && dealer1 == j) {
 						situation = solutions[m][k];
-						//move = false;
+						move = false;
 						break outerloop;
 					}
-					else {
+					if (move == true) {
 						k++;
-						if (k>200){
-							break outerloop;
 						}
 						
 					}
 			}
-			System.out.println("Test41.");
-		}
+			
+		
 		
 		//0-199 and 200-399
-		if (move == true) {						//only does second loop if move = true
+		/*if (move == true) {						//only does second loop if move = true
 			outerloop:
 				for (int i=2;i<22;i++) { 		//Soft
 					for (int j=1;j<11;i++) {
@@ -442,11 +443,13 @@ public class GABlackjack
 						}
 					}
 				}
-			}
+			}*/
 			System.out.println("Test42.");
 
-        return situation;
-    }
+        
+    							//I added brackets here and it fucked everything up
+	return situation;
+}
 
 
     /*
