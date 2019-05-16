@@ -298,11 +298,10 @@ public class GABlackjack
         for (int m = 0; m < population; m++)
         {
             // Loop over blackjack game 
-
-			int taskTotal = 100;			//number of hands
-			double bet = 10.;				//bet of 10$ per hand
+			int taskTotal = 100;					//number of hands
+			double bet = 10.;						//bet of 10$ per hand
 			double totalMoney = bet * taskTotal;	//Initial $ player has
-			double finalMoney = 0.;			//Final $ after 100 games 
+			double finalMoney = 0.;					//Final $ after 100 games 
             double diffBet = 0.;			
 			boolean go = true;
 			boolean dealerGo = true;
@@ -310,7 +309,8 @@ public class GABlackjack
 			
 			for (int tasks = 0; tasks < taskTotal; tasks++) //Loop over games
             {
-				int k = 0;						//removes card from deck after one has been dealt
+				int k = 0;			//used to remove card from deck after one has been dealt
+				int gene = 0;		//either zero or 1				
 				int total1 = 0;
 				int total2 = 0;
 				int dealer1 = 0;
@@ -345,27 +345,29 @@ public class GABlackjack
                 	for (int actions = 0; actions < 9; actions++) //max number of moves in a game - 2 cards dealt 
                	 	{
                     // Get gene number corresponding to this situation, (total = my hand, dealer's face up card) 
-                    	int gene = situation(total2, dealer1, m);	//number between 0 and 399
-
-						if (solutions[m][gene] == 0){	//Stand, do nothing
+                    	gene = geneNum(total2, dealer1, m);	//hit or stay
+						System.out.println(gene);
+						if (gene == 0){	//Stand, do nothing
 							System.out.println("Teststay");
 							System.out.println(solutions[m][gene] + " is the gene number");
 							break;	//breaks out of for loop
 						
 						}
-						if (solutions[m][gene] == 1){							//Hit
+						if (gene == 1){							//Hit
 							System.out.println("Testhit");
 							total2 = cardPicker(total2,k,'h');
 							k++;		
 						}
 						System.out.println(actions + "    actions");
 					}
-				
-					while (dealer2 < 17){							//After player stands, dealer hits until at least 17.
+					
+					//After player stands, dealer hits until at least 17.
+					while (dealer2 < 17){							
 						dealer2 = cardPicker(dealer2,k,'d');	
 							k++;
 					}
 					
+					//Determine who won
 					if (( dealer2 < total2 && total2 < 22) || (dealer2 > 21 && total2 < 22)) 
 					{
 					  	if (total2 == 21){				//win with a blackjack
@@ -379,12 +381,9 @@ public class GABlackjack
 					  finalMoney -= bet;
 
 				    }
-
             //} 
 				
 			deck.clear();		//Clear all elements of deck
-			
-			//finalMoney += 
 				
 		} //Loop over games
             fitness[m] = finalMoney/totalMoney; 
@@ -399,10 +398,11 @@ public class GABlackjack
      The situation() method outputs the gene number associated to a given situation.
      You do not need to modify it.
      */
-    public static int situation(int total2, int dealer1, int m)
+    public static int geneNum(int total2, int dealer1, int m)
     {
         int situation = 0;		//determining which gene number matches what my situation is (my total, dealer up card)
 		System.out.println("Test40.");
+		int geneNum = 0;
 		int k=0;
 		boolean move = true;
 		
@@ -410,46 +410,45 @@ public class GABlackjack
 		
 		
 			outerloop:
-			for (int i=2;i<22;i++) { 				//Hard 
-				for (int j=1;j<11;i++) {
-					if (total2 == i && dealer1 == j) {
-						situation = solutions[m][k];
+			for (int i=2;i<22;i++)		//Hard 
+			{ 				 
+				for (int j=1;j<11;i++) 
+				{
+					if (total2 == i && dealer1 == j) 
+					{
+						geneNum = solutions[m][k];
 						move = false;
 						break outerloop;
 					}
-					if (move == true) {
+					else 
+					{
 						k++;
-						}
-						
 					}
+						
+				}
 			}
 			
 		
 		
 		//0-199 and 200-399
-		/*if (move == true) {						//only does second loop if move = true
+		if (move == true) {						//only does second loop if move = true
 			outerloop:
 				for (int i=2;i<22;i++) { 		//Soft
 					for (int j=1;j<11;i++) {
 						if (total2 == i && dealer1 == j) {
-							situation = solutions[m][k];
+							geneNum = solutions[m][k];
 							break outerloop;
 						}
 						else {
 							k++;
-							if (k>400)
-								break outerloop;
-							
 						}
 					}
 				}
-			}*/
+		}
 			System.out.println("Test42.");
-
-        
-    							//I added brackets here and it fucked everything up
-	return situation;
-}
+					
+			return geneNum;
+	}
 
 
     /*
