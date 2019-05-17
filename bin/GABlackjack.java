@@ -23,18 +23,18 @@ public class GABlackjack
 
 
     // Declare parameters and constants						
-    public static final double pc = 1.0;                // Probability of crossover, will always happen
-    public static double pm = 0.005;                    // Probability of mutation
-    public static final int population = 200;           // Population size (must be even)
-    public static final int chromosomes = 400;          // Chromosome length, number of possibilities
-    public static final int generations = 1000;         // Number of generations
-    public static final int elite = (int)(0.02 * population); // Percentage of solutions to clone, put back at 0.02
+    public static final double pc = 1.0;                		// Probability of crossover, will always happen
+    public static double pm = 0.005;                    		// Probability of mutation
+    public static final int population = 300;           		// Population size
+    public static final int chromosomes = 400;          		// Chromosome length, number of possibilities
+    public static final int generations = 3000;         		// Number of generations
+    public static final int elite = (int)(0.02 * population); 	// Percentage of solutions to clone
 
     // Allocate memory to store solutions and associated fitness
     public static int[][] solutions = new int[population][chromosomes]; // 2D array storing a chromosome for each member of the "population"
     public static double[] fitness = new double[population];            // 1D array storing the "fitness" of each member in the "population"
 	
-	public static ArrayList<Integer> deck = new ArrayList<Integer>();				//Deck
+	public static ArrayList<Integer> deck = new ArrayList<Integer>();	//Deck
 
 
     // Start main method
@@ -277,27 +277,25 @@ public class GABlackjack
 			double avgMoney = 0;
 			double bet = 10.;						//bet of 10$ per hand
 			double totalMoney = bet * taskTotal;	//Initial $ player has
-								//Final $ after 100 games 
-			double maxMoney = totalMoney * 2;		//wins every hand, not considering blackjack hands
             double diffBet = 0.;			
 			boolean go = true;
-			//boolean dontgo = false;
-			double finalMoney = totalMoney; 	//final money after each game
+			double finalMoney = totalMoney; 		//final money updated after each game
 			
-			for (int tasks = 1; tasks <= taskTotal; tasks++) //Loop over 100 games
+			//Loop over 100 games
+			for (int tasks = 1; tasks <= taskTotal; tasks++) 
             {
-				int k = 0;			//used to remove card from deck after one has been dealt
-				int gene = 0;		//either zero or 1				
-				int total1 = 0;
-				int total2 = 0;
-				int dealer1 = 0;
-				int dealer2 = 0;
-				int totalAce = 0;
-				int total11 = 0;
+				int k = 0;					//used to remove card from deck after one has been dealt
+				int gene = 0;				//zero or 1				
+				int total1 = 0;				//player's first card
+				int total2 = 0;				//player's total
+				int dealer1 = 0;			//dealer's face up card
+				int dealer2 = 0;			//dealer's total 
+				int totalAce = 0;			//player total with a hard ace
+				int total11 = 0;			//player total with a soft ace
 				double finalmoneyAce = 0;
 				double finalmoney11 = 0;
 				
-				//Creates deck of 52 cards
+				//Create deck of 52 cards
 			    for (int i=0;i<4;i++) {
 			      for (int j=1;j<=13;j++) {
 			        if (j<10) {
@@ -312,27 +310,27 @@ public class GABlackjack
                 // Shuffle deck and distribute 2 cards to player and dealer 
 			    total1 = cardPicker(total1,k,'h');
 			    k++;
-			    dealer1 = cardPicker(dealer1,k,'d');	//dealer's face up card
+			    dealer1 = cardPicker(dealer1,k,'d');	
 			    k++;
-			    total2 = cardPicker(total1,k,'h');		//total of card 1 + card 2
+			    total2 = cardPicker(total1,k,'h');		
 			    k++;
-			    dealer2 = cardPicker(dealer1,k,'d');	//total of dealer card 1 + card 2
+			    dealer2 = cardPicker(dealer1,k,'d');	
 			    k++;
 
-				if (total1 == 1 || (total2-total1)==1 )		//for differentiating between 1 and 11, run GA twice
+				//for differentiating between ace being a 1 or 11
+				if (total1 == 1 || (total2-total1)==1 )		
 				{ 
-					totalAce = total2;	//totalAce is total with ace = 1 
+					totalAce = total2;	
 					finalmoneyAce = finalMoney;
 					
 
 					//**********Playing the hand with ace as 1
-                	for (int actions = 0; actions < 9; actions++) //max number of moves in a game - 2 cards dealt 
+                	for (int actions = 0; actions < 9; actions++)  
                	 	{
                     	go = false;
 						
-						// Get gene number corresponding to this situation, (total = my hand, dealer's face up card) 
-                    	gene = geneNum(totalAce, dealer1, m, go);		//hit or stay, 1 or 0
-						//System.out.println(gene);
+						// Get gene corresponding to this situation (total = my hand, dealer's face up card) 
+                    	gene = geneNum(totalAce, dealer1, m, go);		
 						
 						if (gene == 0)								//Stay, do nothing
 						{								
@@ -346,16 +344,16 @@ public class GABlackjack
 						}
 					}
 					
-					//After player stands, dealer hits until at least 17.
+					//Dealer hits until 17.
 					while (dealer2 < 17){							
 						dealer2 = cardPicker(dealer2,k,'d');	
 							k++;
 					}
 					
-					//Determine who won
+					//Determine who won & update finalmoneyAce
 					if (( dealer2 < totalAce && totalAce < 22) || (dealer2 > 21 && totalAce < 22)) 
 					{
-					  	if (totalAce == 21){				//win with a blackjack, higher payout
+					  	if (totalAce == 21){
 						  	finalmoneyAce += bet * 1.5; 
 					  	}
 						else {
@@ -369,14 +367,14 @@ public class GABlackjack
 				    } 
 					
 					//************Playing the hand with ace as 11
-                	for (int actions = 0; actions < 9; actions++) //max number of moves in a game - 2 cards dealt 
+                	for (int actions = 0; actions < 9; actions++)
                	 	{
 						total11 = total2 + 10; 
 						finalmoney11 = finalMoney;
 						go = true;
                     
-						// Get gene number corresponding to this situation, (total = my hand, dealer's face up card) 
-                    	gene = geneNum(total11, dealer1, m, go);		//hit or stay, 1 or 0
+						// Get gene number corresponding to this situation (total = my hand, dealer's face up card) 
+                    	gene = geneNum(total11, dealer1, m, go);		
 					
 						if (gene == 0)								//Stay, do nothing
 						{				
@@ -389,16 +387,16 @@ public class GABlackjack
 						}
 					}
 					
-					//After player stands, dealer hits until at least 17.
+					//Dealer hits until 17.
 					while (dealer2 < 17){							
 						dealer2 = cardPicker(dealer2,k,'d');	
 							k++;
 					}
 					
-					//Determine who won
+					//Determine who won & update finalmoney11
 					if (( dealer2 < total11 && total11 < 22) || (dealer2 > 21 && total11 < 22)) 
 					{
-					  	if (total11 == 21){				//win with a blackjack, higher payout
+					  	if (total11 == 21){				
 						  	finalmoney11 += bet * 1.5; 
 					  	}
 						else {
@@ -410,10 +408,13 @@ public class GABlackjack
 					  finalmoney11 -= bet;
 				  }
 				  
-				  //Determine which game won and update final money
+				  //Determine which game (hard or soft) won and update finalMoney
 				  if (finalmoneyAce > finalMoney){
 					  finalMoney = finalmoneyAce;
 				  }
+				  //if (finalmoneyAce > finalmoney11 ){
+				  //finalMoney = finalmoneyAce;
+				  //}
 				  
 				  else{
 					  finalMoney = finalmoney11;
